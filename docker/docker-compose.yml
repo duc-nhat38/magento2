@@ -1,0 +1,50 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: ducpd
+        uid: 1000
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: magento-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ../src:/var/www
+    networks:
+      - magento
+
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: magento-mysql
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_DATABASE: ${DB_DATABASE}
+  #     MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+  #     MYSQL_PASSWORD: ${DB_PASSWORD}
+  #     MYSQL_USER: ${DB_USERNAME}
+  #     SERVICE_TAGS: dev
+  #     SERVICE_NAME: mysql
+  #   volumes:
+  #     - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - magento
+
+  nginx:
+    image: nginx:alpine
+    container_name: magento-nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ../src:/var/www
+      - ./nginx:/etc/nginx/conf.d/
+    networks:
+      - magento
+    depends_on:
+      - app
+
+networks:
+  magento:
+    driver: bridge
